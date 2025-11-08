@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DG.Tweening;
 using Scripts.ObjectPools;
+using Scripts.Player;
 using Scripts.StackGrid;
 using Scripts.Tail;
 using UnityEngine;
@@ -13,6 +14,7 @@ namespace Scripts.Building
         [SerializeField] private Transform blocksParent;
         [SerializeField] private float triggerDelay = .1f, triggerRadius;
         [SerializeField] private LayerMask tailLayer;
+        [SerializeField] private int addCoinAmountPerBlock;
 
         [Header("Animation")]
         [SerializeField] private float animationDuration;
@@ -26,6 +28,8 @@ namespace Scripts.Building
         private float triggerDelayChecker;
 
         private bool buildingCompleted;
+
+        private CoinManager coinManager;
 
 
         private void Awake()
@@ -46,6 +50,8 @@ namespace Scripts.Building
             }
 
             triggerDelayChecker = 0f;
+
+            coinManager = FindFirstObjectByType<CoinManager>();
         }
 
         private void Update()
@@ -82,6 +88,7 @@ namespace Scripts.Building
                             stackedItem.StartPlacing(firstItem.transform.position, () =>
                             {
                                 firstItem.EnableMe(true);
+                                coinManager.AddCoin(addCoinAmountPerBlock);
                                 PoolsManager.Instance.Despawn(stackedItem.MyType, stackedItem.gameObject);
                             }, firstItem.transform.rotation);
 

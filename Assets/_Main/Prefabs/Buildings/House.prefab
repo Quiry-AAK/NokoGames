@@ -288,6 +288,7 @@ MonoBehaviour:
   tailLayer:
     serializedVersion: 2
     m_Bits: 64
+  addCoinAmountPerBlock: 1
   animationDuration: 0.15
   animationScaleEnd: 1.1
   psGameObject: {fileID: 8332691503257397661}
