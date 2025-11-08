@@ -13,6 +13,7 @@ namespace Scripts.AI
 
         protected override void Awake()
         {
+            base.Awake();
             allTasks = new List<AITask>();
             currentTasks = new List<List<AITask>>();
         }

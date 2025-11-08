@@ -1,107 +1,107 @@
-using System.Collections.Generic;
-using Scripts.Tail;
-using UnityEngine;
-using UnityEngine.AI;
+    using System.Collections.Generic;
+    using Scripts.Tail;
+    using UnityEngine;
+    using UnityEngine.AI;
 
-namespace Scripts.AI
-{
-    public class AIController : MonoBehaviour
+    namespace Scripts.AI
     {
-        [SerializeField] private BackManager backManager;
-        [SerializeField] private Animator aiAnimator;
-        [SerializeField] private NavMeshAgent navMeshAgent;
-        [SerializeField] private float turnSpeed;
-        private List<AITask> myTaskChain;
-
-        private AITask currentTask;
-        private int currentTaskIndex;
-
-        public BackManager BackManager => backManager;
-
-        private void Awake()
+        public class AIController : MonoBehaviour
         {
-            currentTaskIndex = -1;
-            navMeshAgent.updateRotation = false;
-        }
+            [SerializeField] private BackManager backManager;
+            [SerializeField] private Animator aiAnimator;
+            [SerializeField] private NavMeshAgent navMeshAgent;
+            [SerializeField] private float turnSpeed;
+            private List<AITask> myTaskChain;
 
-        private void Update()
-        {
-            if (myTaskChain == null)
+            private AITask currentTask;
+            private int currentTaskIndex;
+
+            public BackManager BackManager => backManager;
+
+            private void Awake()
             {
-                LookForAJob();
+                currentTaskIndex = -1;
+                navMeshAgent.updateRotation = false;
             }
 
-            else
+            private void Update()
             {
-                if (currentTask == null)
+                if (myTaskChain == null)
                 {
-                    GoToNextTask();
+                    LookForAJob();
                 }
 
                 else
                 {
-                    ProcessTask();
+                    if (currentTask == null)
+                    {
+                        GoToNextTask();
+                    }
+
+                    else
+                    {
+                        ProcessTask();
+                    }
                 }
+
+                UpdateRotation();
             }
 
-            UpdateRotation();
-        }
-
-        private void LookForAJob()
-        {
-            var taskChain = AITasksManager.Instance.GetMeATaskChain();
-            if (taskChain != null)
+            private void LookForAJob()
             {
-                myTaskChain = taskChain;
-                foreach (var chain in myTaskChain)
+                var taskChain = AITasksManager.Instance.GetMeATaskChain();
+                if (taskChain != null)
                 {
-                    chain.OverrideAssignedAI(this);
+                    myTaskChain = taskChain;
+                    foreach (var chain in myTaskChain)
+                    {
+                        chain.OverrideAssignedAI(this);
+                    }
                 }
             }
-        }
 
-        private void GoToNextTask()
-        {
-            currentTaskIndex++;
-            currentTaskIndex %= myTaskChain.Count;
-
-            if (myTaskChain[currentTaskIndex].ShouldStart())
+            private void GoToNextTask()
             {
-                currentTask = myTaskChain[currentTaskIndex];
+                currentTaskIndex++;
+                currentTaskIndex %= myTaskChain.Count;
+
+                if (myTaskChain[currentTaskIndex].ShouldStart())
+                {
+                    currentTask = myTaskChain[currentTaskIndex];
+                }
+
+                else
+                {
+                    DoNothing();
+                }
             }
 
-            else
+            private void ProcessTask()
             {
-                DoNothing();
+                aiAnimator.SetBool("Running", true);
+                navMeshAgent.SetDestination(currentTask.TargetPos);
+
+                if (currentTask.ShouldFinish())
+                {
+                    GoToNextTask();
+                }
             }
-        }
 
-        private void ProcessTask()
-        {
-            aiAnimator.SetBool("Running", true);
-            navMeshAgent.SetDestination(currentTask.TargetPos);
-
-            if (currentTask.ShouldFinish())
+            private void DoNothing()
             {
-                GoToNextTask();
+                currentTask = null;
+                aiAnimator.SetBool("Running", false);
             }
-        }
 
-        private void DoNothing()
-        {
-            currentTask = null;
-            aiAnimator.SetBool("Running", false);
-        }
+            private void UpdateRotation()
+            {
+                if (!navMeshAgent.hasPath) return;
 
-        private void UpdateRotation()
-        {
-            if (!navMeshAgent.hasPath) return;
+                var direction = (navMeshAgent.steeringTarget - transform.position).normalized;
 
-            var direction = (navMeshAgent.steeringTarget - transform.position).normalized;
+                var targetRotation = Quaternion.LookRotation(direction);
 
-            var targetRotation = Quaternion.LookRotation(direction);
-
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, turnSpeed * Time.deltaTime);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, turnSpeed * Time.deltaTime);
+            }
         }
     }
-}
