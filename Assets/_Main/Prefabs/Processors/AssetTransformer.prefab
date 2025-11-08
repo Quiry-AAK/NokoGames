@@ -689,6 +689,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   gizmosColor: {r: 0.41177544, g: 1, b: 0.28927696, a: 1}
+  sendItemType: 1
 --- !u!1001 &1327330443109806645
 PrefabInstance:
   m_ObjectHideFlags: 0

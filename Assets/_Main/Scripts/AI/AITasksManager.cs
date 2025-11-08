@@ -22,14 +22,18 @@ namespace Scripts.AI
         {
             allTasks.Add(aiTask);
 
-            if (aiTask is AIReceiveTask)
+            for (int i = 0; i < allTasks.Count; i++)
             {
-                UpdateCurrentTasks(aiTask as AIReceiveTask);
+                if (allTasks[i] is AIReceiveTask)
+                {
+                    UpdateCurrentTasks(allTasks[i] as AIReceiveTask);
+                }
             }
         }
 
         private void UpdateCurrentTasks(AIReceiveTask aiReceiveTask)
         {
+            currentTasks.Clear();
             var chainTask = allTasks.Where(x =>
             {
                 if (x is AISendTask)
@@ -41,7 +45,8 @@ namespace Scripts.AI
             }).FirstOrDefault();
 
             var tasks = new List<AITask>();
-            tasks.Add(chainTask);
+            if (chainTask != null)
+                tasks.Add(chainTask);
             tasks.Add(aiReceiveTask);
             currentTasks.Add(tasks);
         }
